@@ -3,7 +3,7 @@ version: "3.7"
 services:
   app_proxy:
     environment:
-      APP_HOST: qbitleap-fractal-node_dashboard_1
+      APP_HOST: qbitleap-frbtc-fractal-node_dashboard_1
       APP_PORT: 8090
       PROXY_AUTH_ADD: "false"
 
