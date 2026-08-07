@@ -1,0 +1,31 @@
+manifestVersion: 1
+
+id: qbitleap-fractal-node
+name: Fractal Bitcoin Node
+tagline: Run a private Fractal Bitcoin node
+icon: https://raw.githubusercontent.com/QbitLeap/FrBtc/main/fractal-node/icon.svg
+category: Bitcoin
+version: "0.1.0"
+port: 8090
+
+description: >-
+  Run a self-hosted Fractal Bitcoin node on Umbrel. The node uses the official
+  Fractald v0.3.0 release and mining-oriented pruning to reduce disk usage while
+  retaining full validation and mining RPC support.
+
+developer: QbitLeap
+website: https://fractalbitcoin.io
+submitter: QbitLeap
+submission: https://github.com/QbitLeap/FrBtc
+repo: https://github.com/QbitLeap/FrBtc
+support: https://github.com/QbitLeap/FrBtc/issues
+
+gallery: []
+
+releaseNotes: >-
+  Initial standalone Fractal Bitcoin node release with pruned mainnet sync,
+  private RPC access, peer-to-peer connectivity, and a local status dashboard.
+
+path: ""
+defaultUsername: ""
+defaultPassword: ""

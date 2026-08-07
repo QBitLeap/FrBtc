@@ -1,0 +1,82 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: qbitleap-fractal-node_dashboard_1
+      APP_PORT: 8090
+      PROXY_AUTH_ADD: "false"
+
+  config:
+    image: alpine:3.21
+    restart: "no"
+    volumes:
+      - ${APP_DATA_DIR}/data/config:/config
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        mkdir -p /config
+        cat > /config/bitcoin.conf <<'EOF_CONFIG'
+        # QbitLeap managed Fractal Bitcoin configuration
+        server=1
+        listen=1
+        prune=30000
+        txindex=0
+        dbcache=1024
+        maxmempool=150
+        rpcbind=0.0.0.0
+        rpcallowip=127.0.0.1
+        rpcallowip=10.0.0.0/8
+        rpcallowip=172.16.0.0/12
+        rpcallowip=192.168.0.0/16
+        rpcuser=fractalrpc
+        rpcpassword=${APP_PASSWORD}
+        rpcport=8332
+        port=8333
+        printtoconsole=1
+        EOF_CONFIG
+        chmod 600 /config/bitcoin.conf
+
+  fractald:
+    image: ghcr.io/qbitleap/frbtc-fractald:0.3.0
+    restart: unless-stopped
+    stop_grace_period: 2m
+    depends_on:
+      config:
+        condition: service_completed_successfully
+    command:
+      - -datadir=/data
+      - -conf=/config/bitcoin.conf
+    ports:
+      - "8333:8333"
+    volumes:
+      - ${APP_DATA_DIR}/data/config:/config:ro
+      - ${APP_DATA_DIR}/data/fractal:/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          bitcoin-cli -datadir=/data -conf=/config/bitcoin.conf
+          -rpcconnect=127.0.0.1 getblockchaininfo >/dev/null
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      start_period: 60s
+
+  dashboard:
+    image: ghcr.io/qbitleap/frbtc-dashboard:0.1.0
+    restart: unless-stopped
+    environment:
+      DASHBOARD_PORT: "8090"
+      FRACTAL_RPC_HOST: fractald
+      FRACTAL_RPC_PORT: "8332"
+      FRACTAL_RPC_USER: fractalrpc
+      FRACTAL_RPC_PASSWORD: ${APP_PASSWORD}
+      FRACTAL_DATA_DIR: /fractal
+    volumes:
+      - ${APP_DATA_DIR}/data/fractal:/fractal:ro
+    depends_on:
+      fractald:
+        condition: service_healthy
