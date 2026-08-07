@@ -11,14 +11,14 @@ services:
     image: alpine:3.21
     restart: "no"
     volumes:
-      - ${APP_DATA_DIR}/data/config:/config
+      - ${APP_DATA_DIR}/data:/app-data
     command:
       - /bin/sh
       - -c
       - |
         set -eu
-        mkdir -p /config
-        cat > /config/bitcoin.conf <<'EOF_CONFIG'
+        mkdir -p /app-data/config /app-data/fractal
+        cat > /app-data/config/bitcoin.conf <<'EOF_CONFIG'
         # QbitLeap managed Fractal Bitcoin configuration
         server=1
         listen=1
@@ -26,6 +26,12 @@ services:
         txindex=0
         dbcache=1024
         maxmempool=150
+        maxconnections=125
+        dnsseed=1
+        addnode=34.87.61.167:8333
+        addnode=34.92.14.221:8333
+        addnode=35.235.106.223:8333
+        addnode=35.189.95.174:8333
         rpcbind=0.0.0.0
         rpcallowip=127.0.0.1
         rpcallowip=10.0.0.0/8
@@ -37,7 +43,8 @@ services:
         port=8333
         printtoconsole=1
         EOF_CONFIG
-        chmod 600 /config/bitcoin.conf
+        chmod 600 /app-data/config/bitcoin.conf
+        chown -R 1000:1000 /app-data/config /app-data/fractal
 
   fractald:
     image: ghcr.io/qbitleap/frbtc-fractald:0.3.0
@@ -49,8 +56,6 @@ services:
     command:
       - -datadir=/data
       - -conf=/config/bitcoin.conf
-    ports:
-      - "8333:8333"
     volumes:
       - ${APP_DATA_DIR}/data/config:/config:ro
       - ${APP_DATA_DIR}/data/fractal:/data

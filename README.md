@@ -9,8 +9,9 @@ A standalone, pruned Fractal Bitcoin node packaged as an Umbrel Community App.
 - Approximately 300 GB storage in mining-oriented prune mode
 - `linux/amd64` only in the initial release
 
-The app pins the official Fractald `v0.3.0` binary release, keeps RPC private,
-and exposes Fractal's peer-to-peer port `8333` on the Umbrel host.
+The app pins the official Fractald `v0.3.0` binary release and keeps RPC
+private. Fractald makes outbound peer connections without claiming Bitcoin
+Node's host port `8333`.
 
 ## Configuration
 
