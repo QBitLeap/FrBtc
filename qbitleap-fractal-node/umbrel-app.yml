@@ -3,7 +3,7 @@ manifestVersion: 1
 id: qbitleap-fractal-node
 name: Fractal Bitcoin Node
 tagline: Run a private Fractal Bitcoin node
-icon: https://raw.githubusercontent.com/QbitLeap/FrBtc/main/fractal-node/icon.svg
+icon: https://raw.githubusercontent.com/QBitLeap/FrBtc/main/qbitleap-fractal-node/icon.svg
 category: Bitcoin
 version: "0.1.0"
 port: 8090

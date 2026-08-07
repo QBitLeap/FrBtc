@@ -30,8 +30,8 @@ Data persists in `${APP_DATA_DIR}/data/fractal`.
 ## Local validation
 
 ```sh
-python3 -m unittest -v fractal-node/dashboard/test_server.py
-docker compose -f fractal-node/docker-compose.yml config
+(cd qbitleap-fractal-node/dashboard && python3 -m unittest -v test_server.py)
+docker compose -f qbitleap-fractal-node/docker-compose.yml config
 ```
 
 ## Upstream
