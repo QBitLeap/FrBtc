@@ -37,8 +37,8 @@ services:
         rpcallowip=10.0.0.0/8
         rpcallowip=172.16.0.0/12
         rpcallowip=192.168.0.0/16
-        rpcuser=fractalrpc
-        rpcpassword=${APP_PASSWORD}
+        rpcuser=${APP_FRACTAL_RPC_USER}
+        rpcpassword=${APP_FRACTAL_RPC_PASS}
         rpcport=8332
         port=8333
         printtoconsole=1
@@ -77,8 +77,8 @@ services:
       DASHBOARD_PORT: "8090"
       FRACTAL_RPC_HOST: fractald
       FRACTAL_RPC_PORT: "8332"
-      FRACTAL_RPC_USER: fractalrpc
-      FRACTAL_RPC_PASSWORD: ${APP_PASSWORD}
+      FRACTAL_RPC_USER: ${APP_FRACTAL_RPC_USER}
+      FRACTAL_RPC_PASSWORD: ${APP_FRACTAL_RPC_PASS}
       FRACTAL_DATA_DIR: /fractal
     volumes:
       - ${APP_DATA_DIR}/data/fractal:/fractal:ro

@@ -5,7 +5,7 @@ name: Fractal Bitcoin Node
 tagline: Run a private Fractal Bitcoin node
 icon: https://raw.githubusercontent.com/QBitLeap/FrBtc/main/qbitleap-frbtc-fractal-node/icon.svg
 category: Bitcoin
-version: "0.1.0"
+version: "0.2.0"
 port: 8090
 
 description: >-
@@ -23,8 +23,8 @@ support: https://github.com/QbitLeap/FrBtc/issues
 gallery: []
 
 releaseNotes: >-
-  Initial standalone Fractal Bitcoin node release with pruned mainnet sync,
-  private RPC access, peer-to-peer connectivity, and a local status dashboard.
+  Export a stable, private RPC contract for trusted dependent Umbrel apps such
+  as QBitLeap BTC while keeping the RPC port unavailable from the host network.
 
 path: ""
 defaultUsername: ""
