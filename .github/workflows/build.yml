@@ -41,7 +41,7 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/qbitleap/frbtc-dashboard:0.1.0
+            ghcr.io/qbitleap/frbtc-dashboard:0.2.0
             ghcr.io/qbitleap/frbtc-dashboard:latest
           cache-from: type=gha,scope=dashboard
           cache-to: type=gha,mode=max,scope=dashboard

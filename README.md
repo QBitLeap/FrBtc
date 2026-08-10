@@ -27,6 +27,11 @@ maxmempool=150
 
 Data persists in `${APP_DATA_DIR}/data/fractal`.
 
+The dashboard stores its last successful RPC snapshot separately. During a
+short RPC timeout caused by intensive initial-sync validation, it continues to
+show the last verified height and progress as `Synchronizing (RPC busy)` rather
+than resetting the display to `Starting`.
+
 ## Local validation
 
 ```sh

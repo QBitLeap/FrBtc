@@ -17,7 +17,7 @@ services:
       - -c
       - |
         set -eu
-        mkdir -p /app-data/config /app-data/fractal
+        mkdir -p /app-data/config /app-data/fractal /app-data/dashboard
         cat > /app-data/config/bitcoin.conf <<'EOF_CONFIG'
         # QbitLeap managed Fractal Bitcoin configuration
         server=1
@@ -44,7 +44,7 @@ services:
         printtoconsole=1
         EOF_CONFIG
         chmod 600 /app-data/config/bitcoin.conf
-        chown -R 1000:1000 /app-data/config /app-data/fractal
+        chown -R 1000:1000 /app-data/config /app-data/fractal /app-data/dashboard
 
   fractald:
     image: ghcr.io/qbitleap/frbtc-fractald:0.3.0
@@ -71,7 +71,7 @@ services:
       start_period: 60s
 
   dashboard:
-    image: ghcr.io/qbitleap/frbtc-dashboard:0.1.0
+    image: ghcr.io/qbitleap/frbtc-dashboard:0.2.0
     restart: unless-stopped
     environment:
       DASHBOARD_PORT: "8090"
@@ -80,8 +80,11 @@ services:
       FRACTAL_RPC_USER: ${APP_FRACTAL_RPC_USER}
       FRACTAL_RPC_PASSWORD: ${APP_FRACTAL_RPC_PASS}
       FRACTAL_DATA_DIR: /fractal
+      FRACTAL_RPC_TIMEOUT: "10"
+      STATUS_CACHE_FILE: /state/last-status.json
     volumes:
       - ${APP_DATA_DIR}/data/fractal:/fractal:ro
+      - ${APP_DATA_DIR}/data/dashboard:/state
     depends_on:
       fractald:
         condition: service_healthy
