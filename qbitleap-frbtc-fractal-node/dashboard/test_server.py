@@ -69,6 +69,26 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("RPC unavailable", page)
         self.assertNotIn(">Starting<", page)
 
+    def test_dashboard_refreshes_every_five_minutes(self):
+        snapshot = {
+            "blocks": 100,
+            "headers": 100,
+            "progress": 1.0,
+            "pruned": True,
+            "peers": 8,
+            "version": "/Satoshi:0.3.0/",
+            "disk": 1024**3,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            with (
+                patch.object(server, "STATUS_CACHE_FILE", Path(directory) / "status.json"),
+                patch.object(server, "status_snapshot", return_value=snapshot),
+            ):
+                page = server.render().decode()
+
+        self.assertIn('http-equiv="refresh" content="300"', page)
+        self.assertIn("refreshes every 5 minutes", page)
+
 
 if __name__ == "__main__":
     unittest.main()

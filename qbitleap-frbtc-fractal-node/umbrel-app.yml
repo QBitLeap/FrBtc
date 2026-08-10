@@ -5,7 +5,7 @@ name: Fractal Bitcoin Node
 tagline: Run a private Fractal Bitcoin node
 icon: https://raw.githubusercontent.com/QBitLeap/FrBtc/main/qbitleap-frbtc-fractal-node/icon.svg
 category: Bitcoin
-version: "0.2.1"
+version: "0.2.2"
 port: 8090
 
 description: >-
@@ -23,9 +23,8 @@ support: https://github.com/QbitLeap/FrBtc/issues
 gallery: []
 
 releaseNotes: >-
-  Keep showing the last verified synchronization status when fractald RPC is
-  temporarily busy during initial sync instead of incorrectly resetting the
-  dashboard to Starting.
+  Reduce automatic dashboard refreshes from every 30 seconds to every five
+  minutes while retaining the persisted RPC status fallback.
 
 path: ""
 defaultUsername: ""
