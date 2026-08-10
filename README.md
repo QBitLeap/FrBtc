@@ -6,7 +6,8 @@ A standalone, pruned Fractal Bitcoin node packaged as an Umbrel Community App.
 
 - 2 CPU cores
 - 4 GB RAM recommended during initial sync
-- Approximately 300 GB storage in mining-oriented prune mode
+- 2,000 MiB raw block and undo-data pruning target, plus chainstate and
+  block-index storage; this retains headroom above Fractald's 550 MiB minimum
 - `linux/amd64` only in the initial release
 
 The app pins the official Fractald `v0.3.0` binary release and keeps RPC
@@ -19,7 +20,7 @@ The managed configuration uses:
 
 ```ini
 server=1
-prune=30000
+prune=2000
 txindex=0
 dbcache=1024
 maxmempool=150

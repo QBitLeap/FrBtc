@@ -5,7 +5,7 @@ name: Fractal Bitcoin Node
 tagline: Run a private Fractal Bitcoin node
 icon: https://raw.githubusercontent.com/QBitLeap/FrBtc/main/qbitleap-frbtc-fractal-node/icon.svg
 category: Bitcoin
-version: "0.2.2"
+version: "0.2.3"
 port: 8090
 
 description: >-
@@ -23,8 +23,9 @@ support: https://github.com/QbitLeap/FrBtc/issues
 gallery: []
 
 releaseNotes: >-
-  Reduce automatic dashboard refreshes from every 30 seconds to every five
-  minutes while retaining the persisted RPC status fallback.
+  Reduce the raw block and undo-data pruning target from 30,000 MiB to the
+  storage-efficient 2,000 MiB setting, retaining headroom above Fractald's
+  minimum for merge mining and routine chain reorganizations.
 
 path: ""
 defaultUsername: ""

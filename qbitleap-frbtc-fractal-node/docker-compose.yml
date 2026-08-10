@@ -22,7 +22,7 @@ services:
         # QbitLeap managed Fractal Bitcoin configuration
         server=1
         listen=1
-        prune=30000
+        prune=2000
         txindex=0
         dbcache=1024
         maxmempool=150
