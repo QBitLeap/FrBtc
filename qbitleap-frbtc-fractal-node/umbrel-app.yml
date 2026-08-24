@@ -22,10 +22,7 @@ support: https://github.com/QbitLeap/FrBtc/issues
 
 gallery: []
 
-releaseNotes: >-
-  Reduce the raw block and undo-data pruning target from 30,000 MiB to the
-  storage-efficient 2,000 MiB setting, retaining headroom above Fractald's
-  minimum for merge mining and routine chain reorganizations.
+releaseNotes: "Reduce the raw block and undo-data pruning target from 30,000 MiB to the storage-efficient 2,000 MiB setting, retaining headroom above Fractald's minimum for merge mining and routine chain reorganizations."
 
 path: ""
 defaultUsername: ""

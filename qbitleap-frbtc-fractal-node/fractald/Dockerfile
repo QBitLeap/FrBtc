@@ -2,16 +2,18 @@
 
 FROM debian:bookworm-slim
 
-ARG FRACTALD_VERSION=0.3.0
-ARG FRACTALD_ARCHIVE=fractald-0.3.0-x86_64-linux-gnu.tar.gz
-ARG FRACTALD_SHA256=0321234913e3543cda1c6c07163ac5c3b259b1ce26118ee21e930fd9b48f9d5b
+ARG FRACTALD_VERSION
+ARG FRACTALD_SHA256
+
+RUN test -n "${FRACTALD_VERSION}" \
+    && test -n "${FRACTALD_SHA256}"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl \
     && rm -rf /var/lib/apt/lists/* \
     && curl --proto '=https' --tlsv1.2 --fail --location \
       --output /tmp/fractald.tar.gz \
-      "https://github.com/fractal-bitcoin/fractald-release/releases/download/v${FRACTALD_VERSION}/${FRACTALD_ARCHIVE}" \
+      "https://github.com/fractal-bitcoin/fractald-release/releases/download/v${FRACTALD_VERSION}/fractald-${FRACTALD_VERSION}-x86_64-linux-gnu.tar.gz" \
     && echo "${FRACTALD_SHA256}  /tmp/fractald.tar.gz" | sha256sum --check --strict \
     && tar -xzf /tmp/fractald.tar.gz -C /tmp \
     && install -m 0755 "/tmp/fractald-${FRACTALD_VERSION}-x86_64-linux-gnu/bin/bitcoind" /usr/local/bin/bitcoind \

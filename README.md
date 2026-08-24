@@ -46,6 +46,11 @@ docker compose -f qbitleap-frbtc-fractal-node/docker-compose.yml config
 - Source repository: https://github.com/fractal-bitcoin/fractal
 - Pinned release: `v0.3.0`
 
+The scheduled release workflow checks for a newer stable Fractald release each
+week. It validates the GitHub-provided asset digest, runs dashboard and Compose
+tests, builds the candidate images, and exercises the node's regtest RPC. The
+Umbrel version is bumped and pushed only after every compatibility gate passes.
+
 ## License
 
 The Umbrel packaging and dashboard in this repository are licensed under MIT.

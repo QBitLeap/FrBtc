@@ -14,6 +14,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - name: Load release coordinates
+        shell: bash
+        run: |
+          set -euo pipefail
+          app_version="$(sed -n 's/^version: "\([^"]*\)"$/\1/p' qbitleap-frbtc-fractal-node/umbrel-app.yml)"
+          fractald_version="$(tr -d '[:space:]' < FRACTALD_VERSION)"
+          fractald_sha256="$(tr -d '[:space:]' < FRACTALD_SHA256)"
+          test -n "${app_version}"
+          grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' <<< "${fractald_version}"
+          grep -Eq '^[0-9a-f]{64}$' <<< "${fractald_sha256}"
+          printf 'APP_VERSION=%s\n' "${app_version}" >> "${GITHUB_ENV}"
+          printf 'FRACTALD_VERSION=%s\n' "${fractald_version}" >> "${GITHUB_ENV}"
+          printf 'FRACTALD_SHA256=%s\n' "${fractald_sha256}" >> "${GITHUB_ENV}"
       - name: Test dashboard
         working-directory: qbitleap-frbtc-fractal-node/dashboard
         run: python3 -m unittest -v test_server.py
@@ -29,8 +42,11 @@ jobs:
           context: qbitleap-frbtc-fractal-node/fractald
           platforms: linux/amd64
           push: true
+          build-args: |
+            FRACTALD_VERSION=${{ env.FRACTALD_VERSION }}
+            FRACTALD_SHA256=${{ env.FRACTALD_SHA256 }}
           tags: |
-            ghcr.io/qbitleap/frbtc-fractald:0.3.0
+            ghcr.io/qbitleap/frbtc-fractald:${{ env.APP_VERSION }}
             ghcr.io/qbitleap/frbtc-fractald:latest
           cache-from: type=gha,scope=fractald
           cache-to: type=gha,mode=max,scope=fractald
@@ -41,7 +57,7 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/qbitleap/frbtc-dashboard:0.2.1
+            ghcr.io/qbitleap/frbtc-dashboard:${{ env.APP_VERSION }}
             ghcr.io/qbitleap/frbtc-dashboard:latest
           cache-from: type=gha,scope=dashboard
           cache-to: type=gha,mode=max,scope=dashboard

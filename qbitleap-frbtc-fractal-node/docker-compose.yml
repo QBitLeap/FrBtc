@@ -47,7 +47,7 @@ services:
         chown -R 1000:1000 /app-data/config /app-data/fractal /app-data/dashboard
 
   fractald:
-    image: ghcr.io/qbitleap/frbtc-fractald:0.3.0
+    image: ghcr.io/qbitleap/frbtc-fractald:0.2.3
     restart: unless-stopped
     stop_grace_period: 2m
     depends_on:
@@ -71,7 +71,7 @@ services:
       start_period: 60s
 
   dashboard:
-    image: ghcr.io/qbitleap/frbtc-dashboard:0.2.1
+    image: ghcr.io/qbitleap/frbtc-dashboard:0.2.3
     restart: unless-stopped
     environment:
       DASHBOARD_PORT: "8090"

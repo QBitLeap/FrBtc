@@ -1,0 +1,189 @@
+name: Release Fractald update
+
+on:
+  schedule:
+    - cron: "41 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: release-fractald-update
+  cancel-in-progress: false
+
+env:
+  RELEASE_REPOSITORY: fractal-bitcoin/fractald-release
+  MANIFEST: qbitleap-frbtc-fractal-node/umbrel-app.yml
+  COMPOSE_FILE: qbitleap-frbtc-fractal-node/docker-compose.yml
+  FRACTALD_DIRECTORY: qbitleap-frbtc-fractal-node/fractald
+  DASHBOARD_DIRECTORY: qbitleap-frbtc-fractal-node/dashboard
+  FRACTALD_IMAGE: ghcr.io/qbitleap/frbtc-fractald
+  DASHBOARD_IMAGE: ghcr.io/qbitleap/frbtc-dashboard
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Load pinned release
+        shell: bash
+        run: |
+          set -euo pipefail
+          pinned_version="$(tr -d '[:space:]' < FRACTALD_VERSION)"
+          pinned_sha256="$(tr -d '[:space:]' < FRACTALD_SHA256)"
+          grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' <<< "${pinned_version}"
+          grep -Eq '^[0-9a-f]{64}$' <<< "${pinned_sha256}"
+          printf 'PINNED_VERSION=%s\n' "${pinned_version}" >> "${GITHUB_ENV}"
+
+      - name: Fetch latest official release
+        id: upstream
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          release_json="$(gh api "repos/${RELEASE_REPOSITORY}/releases/latest")"
+          tag="$(jq -r '.tag_name' <<< "${release_json}")"
+          version="${tag#v}"
+          grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' <<< "${version}"
+          asset="fractald-${version}-x86_64-linux-gnu.tar.gz"
+          digest="$(jq -r --arg asset "${asset}" '.assets[] | select(.name == $asset) | .digest' <<< "${release_json}")"
+          sha256="${digest#sha256:}"
+          grep -Eq '^[0-9a-f]{64}$' <<< "${sha256}"
+          if [[ "${version}" == "${PINNED_VERSION}" ]]; then
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          newest="$(printf '%s\n%s\n' "${PINNED_VERSION}" "${version}" | sort -V | tail -n 1)"
+          if [[ "${newest}" != "${version}" ]]; then
+            echo "Refusing to downgrade Fractald from ${PINNED_VERSION} to ${version}" >&2
+            exit 1
+          fi
+          printf 'FRACTALD_VERSION=%s\n' "${version}" >> "${GITHUB_ENV}"
+          printf 'FRACTALD_SHA256=%s\n' "${sha256}" >> "${GITHUB_ENV}"
+          echo "changed=true" >> "${GITHUB_OUTPUT}"
+
+      - name: Stop when the release is current
+        if: steps.upstream.outputs.changed == 'false'
+        run: echo "The pinned Fractald release is current."
+
+      - name: Prepare candidate Umbrel release
+        if: steps.upstream.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_app_version="$(sed -n 's/^version: "\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)"$/\1/p' "${MANIFEST}")"
+          test -n "${current_app_version}"
+          IFS=. read -r major minor patch <<< "${current_app_version}"
+          app_version="${major}.${minor}.$((patch + 1))"
+          printf '%s\n' "${FRACTALD_VERSION}" > FRACTALD_VERSION
+          printf '%s\n' "${FRACTALD_SHA256}" > FRACTALD_SHA256
+          sed -i "s/^version: \"${current_app_version}\"$/version: \"${app_version}\"/" "${MANIFEST}"
+          sed -i "s/Fractald v${PINNED_VERSION}/Fractald v${FRACTALD_VERSION}/" "${MANIFEST}"
+          sed -i "s|^releaseNotes:.*$|releaseNotes: \"Automatically updated Fractald from v${PINNED_VERSION} to v${FRACTALD_VERSION}.\"|" "${MANIFEST}"
+          sed -E -i "s#(ghcr.io/qbitleap/frbtc-(fractald|dashboard):)[^[:space:]]+#\\1${app_version}#g" "${COMPOSE_FILE}"
+          sed -i "s/Fractald \`v${PINNED_VERSION}\`/Fractald \`v${FRACTALD_VERSION}\`/" README.md
+          sed -i "s/Pinned release: \`v${PINNED_VERSION}\`/Pinned release: \`v${FRACTALD_VERSION}\`/" README.md
+          printf 'APP_VERSION=%s\n' "${app_version}" >> "${GITHUB_ENV}"
+
+      - name: Test dashboard and Compose contract
+        if: steps.upstream.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH="${DASHBOARD_DIRECTORY}" \
+            python3 -m unittest -v "${DASHBOARD_DIRECTORY}/test_server.py"
+          APP_DATA_DIR=/tmp/fractal-app APP_FRACTAL_RPC_USER=fractalrpc \
+            APP_FRACTAL_RPC_PASS=test-password \
+            docker compose -f "${COMPOSE_FILE}" config --quiet
+
+      - name: Set up Docker Buildx
+        if: steps.upstream.outputs.changed == 'true'
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        if: steps.upstream.outputs.changed == 'true'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish candidate Fractald image
+        if: steps.upstream.outputs.changed == 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ env.FRACTALD_DIRECTORY }}
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            FRACTALD_VERSION=${{ env.FRACTALD_VERSION }}
+            FRACTALD_SHA256=${{ env.FRACTALD_SHA256 }}
+          tags: ${{ env.FRACTALD_IMAGE }}:${{ env.APP_VERSION }}
+          cache-from: type=gha,scope=release-fractald
+          cache-to: type=gha,mode=max,scope=release-fractald
+
+      - name: Verify binary and RPC compatibility
+        if: steps.upstream.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="${FRACTALD_IMAGE}:${APP_VERSION}"
+          docker run --rm "${image}" --version
+          docker run --rm --entrypoint bitcoin-cli "${image}" --version
+          container="$(docker run --detach --rm \
+            "${image}" -regtest -server=1 -rpcuser=smoke -rpcpassword=smoke \
+            -rpcbind=0.0.0.0 -rpcallowip=0.0.0.0/0)"
+          trap 'docker logs "${container}" || true; docker stop "${container}" >/dev/null || true' EXIT
+          ready=false
+          for attempt in {1..30}; do
+            if docker exec "${container}" bitcoin-cli -regtest \
+              -rpcuser=smoke -rpcpassword=smoke getblockchaininfo > "${RUNNER_TEMP}/chain.json" 2>/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          if [[ "${ready}" != true ]]; then
+            echo "Fractald RPC did not become ready" >&2
+            exit 1
+          fi
+          jq -e '.chain == "regtest" and (.blocks | type == "number") and (.initialblockdownload | type == "boolean")' \
+            "${RUNNER_TEMP}/chain.json"
+          docker exec "${container}" bitcoin-cli -regtest \
+            -rpcuser=smoke -rpcpassword=smoke getnetworkinfo > "${RUNNER_TEMP}/network.json"
+          jq -e '(.headers | type == "number") and (.verificationprogress | type == "number") and (.pruned | type == "boolean")' \
+            "${RUNNER_TEMP}/chain.json"
+          jq -e '(.connections | type == "number") and (.subversion | type == "string")' \
+            "${RUNNER_TEMP}/network.json"
+
+      - name: Build and publish candidate dashboard image
+        if: steps.upstream.outputs.changed == 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ env.DASHBOARD_DIRECTORY }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.DASHBOARD_IMAGE }}:${{ env.APP_VERSION }}
+          cache-from: type=gha,scope=release-dashboard
+          cache-to: type=gha,mode=max,scope=release-dashboard
+
+      - name: Publish Umbrel release to main
+        if: steps.upstream.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add FRACTALD_VERSION FRACTALD_SHA256 README.md \
+            "${MANIFEST}" "${COMPOSE_FILE}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Release ${APP_VERSION} with Fractald v${FRACTALD_VERSION}"
+          git push origin HEAD:main
