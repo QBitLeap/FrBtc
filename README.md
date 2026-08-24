@@ -46,9 +46,9 @@ docker compose -f qbitleap-frbtc-fractal-node/docker-compose.yml config
 - Source repository: https://github.com/fractal-bitcoin/fractal
 - Pinned release: `v0.4.0`
 
-The scheduled release workflow checks for a newer stable Fractald release each
-week. It validates the GitHub-provided asset digest, runs dashboard and Compose
-tests, builds the candidate images, and exercises the node's regtest RPC. The
+The scheduled release workflow checks for a newer stable Fractald release
+daily at 20:17 UTC. It validates the GitHub-provided asset digest, runs dashboard
+and Compose tests, builds the candidate images, and exercises the node's regtest RPC. The
 Umbrel version is bumped and pushed only after every compatibility gate passes.
 
 ## License

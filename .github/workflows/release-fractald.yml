@@ -2,7 +2,7 @@ name: Release Fractald update
 
 on:
   schedule:
-    - cron: "41 8 * * 1"
+    - cron: "17 20 * * *"
   workflow_dispatch:
 
 permissions:
