@@ -101,9 +101,15 @@ jobs:
           set -euo pipefail
           PYTHONPATH="${DASHBOARD_DIRECTORY}" \
             python3 -m unittest -v "${DASHBOARD_DIRECTORY}/test_server.py"
+          printf '%s\n' \
+            'services:' \
+            '  app_proxy:' \
+            '    image: alpine:3.21' \
+            > "${RUNNER_TEMP}/compose-validation.yml"
           APP_DATA_DIR=/tmp/fractal-app APP_FRACTAL_RPC_USER=fractalrpc \
             APP_FRACTAL_RPC_PASS=test-password \
-            docker compose -f "${COMPOSE_FILE}" config --quiet
+            docker compose -f "${COMPOSE_FILE}" \
+              -f "${RUNNER_TEMP}/compose-validation.yml" config --quiet
 
       - name: Set up Docker Buildx
         if: steps.upstream.outputs.changed == 'true'
