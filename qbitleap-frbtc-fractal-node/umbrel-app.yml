@@ -5,12 +5,12 @@ name: Fractal Bitcoin Node
 tagline: Run a private Fractal Bitcoin node
 icon: https://raw.githubusercontent.com/QBitLeap/FrBtc/main/qbitleap-frbtc-fractal-node/icon.svg
 category: Bitcoin
-version: "0.2.3"
+version: "0.2.4"
 port: 8090
 
 description: >-
   Run a self-hosted Fractal Bitcoin node on Umbrel. The node uses the official
-  Fractald v0.3.0 release and mining-oriented pruning to reduce disk usage while
+  Fractald v0.4.0 release and mining-oriented pruning to reduce disk usage while
   retaining full validation and mining RPC support.
 
 developer: QbitLeap
@@ -22,7 +22,7 @@ support: https://github.com/QbitLeap/FrBtc/issues
 
 gallery: []
 
-releaseNotes: "Reduce the raw block and undo-data pruning target from 30,000 MiB to the storage-efficient 2,000 MiB setting, retaining headroom above Fractald's minimum for merge mining and routine chain reorganizations."
+releaseNotes: "Automatically updated Fractald from v0.3.0 to v0.4.0."
 
 path: ""
 defaultUsername: ""

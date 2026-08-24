@@ -10,7 +10,7 @@ A standalone, pruned Fractal Bitcoin node packaged as an Umbrel Community App.
   block-index storage; this retains headroom above Fractald's 550 MiB minimum
 - `linux/amd64` only in the initial release
 
-The app pins the official Fractald `v0.3.0` binary release and keeps RPC
+The app pins the official Fractald `v0.4.0` binary release and keeps RPC
 private. Fractald makes outbound peer connections without claiming Bitcoin
 Node's host port `8333`.
 
@@ -44,7 +44,7 @@ docker compose -f qbitleap-frbtc-fractal-node/docker-compose.yml config
 
 - Release repository: https://github.com/fractal-bitcoin/fractald-release
 - Source repository: https://github.com/fractal-bitcoin/fractal
-- Pinned release: `v0.3.0`
+- Pinned release: `v0.4.0`
 
 The scheduled release workflow checks for a newer stable Fractald release each
 week. It validates the GitHub-provided asset digest, runs dashboard and Compose
